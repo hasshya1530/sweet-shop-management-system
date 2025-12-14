@@ -1,12 +1,13 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+import os
 
-from .routers import auth, sweets
-from .database import models
-from .database.database import engine, SessionLocal
-from .database.crud import get_password_hash
-from .dependencies import get_db
+from backend.routers import auth, sweets
+from backend.database import models
+from backend.database.database import engine, SessionLocal
+from backend.database.crud import get_password_hash
+from backend.dependencies import get_db
 
 # =========================================================
 # CREATE DATABASE TABLES
@@ -24,7 +25,10 @@ app = FastAPI(title="Sweet Shop Management System")
 def create_default_admin():
     db = SessionLocal()
     try:
-        admin = db.query(models.User).filter(models.User.is_admin == True).first()
+        admin = db.query(models.User).filter(
+            models.User.username == "admin"
+        ).first()
+
         if not admin:
             admin_user = models.User(
                 username="admin",
@@ -44,16 +48,11 @@ def startup_event():
     create_default_admin()
 
 # =========================================================
-# CORS (VITE FRONTEND)
+# CORS CONFIGURATION
 # =========================================================
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # ✅ fine for demo / assignment
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
